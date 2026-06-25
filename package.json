@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "expo-router": "^56.2.11"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}
