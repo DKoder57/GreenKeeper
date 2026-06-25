@@ -1,24 +1,24 @@
-# Architecture
+# Arquitetura
 
-## Overview
+## Visão Geral
 
-GreenKeeper is a mobile application built with React Native and Expo focused on plant management, care tracking, local data persistence, and future gamification features.
+O GreenKeeper é um aplicativo mobile desenvolvido com React Native e Expo voltado para gerenciamento de plantas, registro de cuidados, persistência local de dados e futuras funcionalidades de gamificação.
 
-The architecture follows a feature-oriented structure combined with clear separation of responsibilities, aiming to provide scalability, maintainability, and long-term project sustainability.
+A arquitetura segue uma abordagem orientada a funcionalidades (*Feature-Based Architecture*) combinada com separação clara de responsabilidades, visando escalabilidade, manutenibilidade e evolução sustentável do projeto.
 
-### Architectural Principles
+### Princípios Arquiteturais
 
-* Separation of Concerns
-* Single Responsibility Principle
-* Feature-Based Organization
-* Domain Isolation
-* Predictable State Management
-* Strong Type Safety
-* Production-Ready Structure
+* Separação de Responsabilidades (*Separation of Concerns*)
+* Princípio da Responsabilidade Única (*Single Responsibility Principle*)
+* Organização por Domínio (*Feature-Based Organization*)
+* Isolamento de Contextos de Negócio
+* Gerenciamento de Estado Previsível
+* Tipagem Forte
+* Estrutura Preparada para Produção
 
 ---
 
-# Project Structure
+# Estrutura do Projeto
 
 ```text
 src/
@@ -53,184 +53,184 @@ src/
 
 ---
 
-# Layer Responsibilities
+# Responsabilidades das Camadas
 
-## App Layer
+## Camada App
 
-**Location**
+**Localização**
 
 ```text
 src/app
 ```
 
-**Responsibilities**
+**Responsabilidades**
 
-* Route definitions
-* Navigation flow
-* Screen composition
-* Global provider initialization
+* Definição de rotas
+* Fluxo de navegação
+* Composição de telas
+* Inicialização de provedores globais
 
-**Restrictions**
+**Restrições**
 
-* No business logic
-* No direct database access
-* No data transformation logic
+* Não conter regras de negócio
+* Não acessar o banco de dados diretamente
+* Não realizar transformações complexas de dados
 
-The App layer should only orchestrate navigation and screen rendering.
+A camada App deve atuar apenas como ponto de entrada e orquestração da navegação.
 
 ---
 
-## Feature Layer
+## Camada Features
 
-**Location**
+**Localização**
 
 ```text
 src/features
 ```
 
-**Responsibilities**
+**Responsabilidades**
 
-* Business rules
-* Domain-specific components
-* Data access abstractions
-* React Query hooks
-* Validation schemas
+* Regras de negócio
+* Componentes específicos do domínio
+* Abstrações de acesso aos dados
+* Hooks do React Query
+* Esquemas de validação
 
-Each feature should be self-contained and independent whenever possible.
+Cada funcionalidade deve ser autocontida e independente sempre que possível.
 
-Example:
+Exemplo:
 
 ```text
 features/plants
 ```
 
-Contains everything related to plant management.
+Contém tudo relacionado ao gerenciamento de plantas.
 
 ---
 
-## Shared Layer
+## Camada Shared
 
-**Location**
+**Localização**
 
 ```text
 src/shared
 ```
 
-**Responsibilities**
+**Responsabilidades**
 
-Reusable resources available across the application.
+Recursos reutilizáveis disponíveis para toda a aplicação.
 
-Examples:
+Exemplos:
 
-* Buttons
+* Botões
 * Inputs
 * Cards
-* Generic hooks
-* Utility functions
+* Hooks genéricos
+* Funções utilitárias
 
-Components in this layer must remain domain-agnostic.
+Os componentes desta camada devem permanecer independentes das regras de negócio.
 
-A shared component should not contain business-specific logic.
+Um componente compartilhado não deve possuir conhecimento sobre plantas, notificações ou conquistas.
 
 ---
 
-## Core Layer
+## Camada Core
 
-**Location**
+**Localização**
 
 ```text
 src/core
 ```
 
-**Responsibilities**
+**Responsabilidades**
 
-Application-wide infrastructure.
+Infraestrutura global da aplicação.
 
-Examples:
+Exemplos:
 
-* Theme configuration
-* Environment configuration
-* Database initialization
-* Global constants
+* Configuração de temas
+* Variáveis de ambiente
+* Inicialização do banco de dados
+* Constantes globais
 
-The Core layer provides foundational services and should not depend on feature modules.
+A camada Core fornece a base do sistema e não deve depender de módulos de negócio.
 
 ---
 
-## Store Layer
+## Camada Store
 
-**Location**
+**Localização**
 
 ```text
 src/store
 ```
 
-**Responsibilities**
+**Responsabilidades**
 
-Global UI state management.
+Gerenciamento de estados globais relacionados à interface.
 
-Examples:
+Exemplos:
 
-* Theme selection
-* Modal visibility
-* UI preferences
-* Temporary interface state
+* Tema ativo
+* Controle de modais
+* Preferências visuais
+* Estados temporários da interface
 
-Business data must not be stored here.
+Dados de negócio não devem ser armazenados nesta camada.
 
 ---
 
-# State Management
+# Gerenciamento de Estado
 
-GreenKeeper separates state according to its purpose and lifecycle.
+O GreenKeeper separa os estados da aplicação de acordo com sua natureza e ciclo de vida.
 
-## Persistent Data
+## Dados Persistentes
 
-Managed by:
+Gerenciados por:
 
 * React Query
 
-Examples:
+Exemplos:
 
-* Plants
-* Care history
-* Statistics
-* Achievements
+* Plantas cadastradas
+* Histórico de cuidados
+* Estatísticas
+* Conquistas
 
-Responsibilities:
+Responsabilidades:
 
-* Caching
-* Synchronization
-* Data fetching
-* Loading states
-* Error states
+* Cache
+* Sincronização
+* Busca de dados
+* Estados de carregamento
+* Estados de erro
 
 ---
 
-## UI State
+## Estado de Interface
 
-Managed by:
+Gerenciado por:
 
 * Zustand
 
-Examples:
+Exemplos:
 
-* Active theme
-* Open modals
-* Temporary UI controls
-* User interface preferences
+* Tema selecionado
+* Modais abertos
+* Preferências visuais
+* Estados temporários da interface
 
-Responsibilities:
+Responsabilidades:
 
-* Fast updates
-* Lightweight global state
-* Cross-screen UI communication
+* Atualizações rápidas
+* Compartilhamento de estado visual
+* Comunicação entre telas
 
 ---
 
-# Data Flow
+# Fluxo de Dados
 
-The application follows a unidirectional data flow.
+A aplicação segue um fluxo unidirecional de dados.
 
 ```text
 UI
@@ -242,101 +242,101 @@ Services
 SQLite
 ```
 
-Detailed flow:
+Fluxo detalhado:
 
 ```text
-Screen
+Tela
  ↓
-React Query Hook
+Hook React Query
  ↓
-Domain Service
+Serviço do Domínio
  ↓
-Database
+Banco de Dados
 ```
 
-Database access must occur exclusively through service modules.
+O acesso ao banco deve ocorrer exclusivamente através da camada de serviços.
 
 ---
 
-# Form Validation
+# Validação de Formulários
 
-All user input must be validated before persistence.
+Toda entrada de dados deve ser validada antes da persistência.
 
-### Recommended Stack
+### Stack Recomendada
 
 * React Hook Form
 * Zod
 
-### Responsibilities
+### Responsabilidades
 
-* Input validation
-* Type inference
-* User feedback
-* Invalid submission prevention
+* Validação de entradas
+* Inferência de tipos
+* Feedback ao usuário
+* Bloqueio de submissões inválidas
 
-Examples:
+Exemplos:
 
-* Required fields
-* Minimum text length
-* Numeric limits
-* Date validation
+* Campos obrigatórios
+* Tamanho mínimo de texto
+* Limites numéricos
+* Validação de datas
 
-Validation must occur before any database operation is executed.
+Nenhuma operação de banco deve ser executada sem validação prévia.
 
 ---
 
-# Error Handling
+# Tratamento de Erros
 
-Errors are handled according to the responsibility of each layer.
+Os erros são tratados de acordo com a responsabilidade de cada camada.
 
 ## Services
 
-Responsibilities:
+**Responsabilidades**
 
-* Execute database operations
-* Return results
-* Throw errors when necessary
+* Executar operações no banco
+* Retornar resultados
+* Propagar erros quando necessário
 
-Services should not display alerts or UI feedback.
+Serviços não devem exibir mensagens, alertas ou elementos visuais.
 
 ---
 
 ## Hooks
 
-Responsibilities:
+**Responsabilidades**
 
-* Manage loading state
-* Manage error state
-* Expose query status
+* Gerenciar estados de carregamento
+* Gerenciar estados de erro
+* Expor o status das operações
 
-React Query is responsible for most of this behavior.
-
----
-
-## UI
-
-Responsibilities:
-
-* Display error states
-* Display empty states
-* Display loading states
-* Provide retry actions
-
-The UI should gracefully recover from failures whenever possible.
+Grande parte desse comportamento é controlada automaticamente pelo React Query.
 
 ---
 
-# Naming Conventions
+## Interface
 
-## Components
+**Responsabilidades**
 
-**Pattern**
+* Exibir estados de erro
+* Exibir estados vazios
+* Exibir carregamentos
+* Permitir tentativas de recuperação
+
+A interface deve responder de forma previsível e evitar falhas visíveis ao usuário.
+
+---
+
+# Convenções de Nomenclatura
+
+## Componentes
+
+**Padrão**
 
 ```text
 PascalCase
 ```
 
-**Examples**
+**Exemplos**
 
 ```text
 PlantCard.tsx
@@ -348,13 +348,13 @@ PlantForm.tsx
 
 ## Hooks
 
-**Pattern**
+**Padrão**
 
 ```text
-camelCase with "use" prefix
+camelCase com prefixo "use"
 ```
 
-**Examples**
+**Exemplos**
 
 ```text
 usePlants.ts
@@ -364,15 +364,15 @@ useTheme.ts
 
 ---
 
-## Services
+## Serviços
 
-**Pattern**
+**Padrão**
 
 ```text
-camelCase + Service suffix
+camelCase + sufixo Service
 ```
 
-**Examples**
+**Exemplos**
 
 ```text
 plantService.ts
@@ -381,15 +381,15 @@ notificationService.ts
 
 ---
 
-## Utilities
+## Utilitários
 
-**Pattern**
+**Padrão**
 
 ```text
 camelCase
 ```
 
-**Examples**
+**Exemplos**
 
 ```text
 dateFormatter.ts
@@ -398,16 +398,15 @@ stringNormalizer.ts
 
 ---
 
-## Routes and Directories
+## Rotas e Diretórios
 
-**Pattern**
+**Padrão**
 
 ```text
-lowercase
-kebab-case
+minúsculo ou kebab-case
 ```
 
-**Examples**
+**Exemplos**
 
 ```text
 plant/
@@ -417,9 +416,9 @@ notifications/
 
 ---
 
-# Dependency Rules
+# Regras de Dependência
 
-Allowed dependency flow:
+Fluxo permitido:
 
 ```text
 app
@@ -431,25 +430,25 @@ shared
 core
 ```
 
-### Rules
+### Regras
 
-* Features must not depend directly on other features.
-* Shared modules must remain domain-independent.
-* Core must not depend on features.
-* Database access must occur only through services.
-* UI components must not execute SQL operations.
+* Features não devem depender diretamente de outras features.
+* Recursos compartilhados devem permanecer independentes do domínio.
+* Core não deve depender de features.
+* O banco de dados deve ser acessado apenas por serviços.
+* Componentes de interface não devem executar consultas SQL.
 
 ---
 
-# Architectural Goals
+# Objetivos Arquiteturais
 
-The architecture is designed to support:
+A arquitetura foi projetada para oferecer:
 
-* Long-term maintainability
-* Predictable code organization
-* Feature scalability
-* Clear ownership of responsibilities
-* Ease of onboarding
-* Production-ready development practices
+* Facilidade de manutenção
+* Organização previsível do código
+* Escalabilidade de funcionalidades
+* Responsabilidades bem definidas
+* Facilidade de aprendizado e onboarding
+* Boas práticas compatíveis com ambientes de produção
 
-All future features should follow the same architectural principles to maintain consistency throughout the project.
+Toda nova funcionalidade adicionada ao projeto deve seguir os mesmos princípios arquiteturais para preservar a consistência do código ao longo do tempo.
