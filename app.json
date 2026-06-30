@@ -3,6 +3,7 @@
     "name": "GreenKeeper",
     "slug": "GreenKeeper",
     "version": "1.0.0",
+    "scheme": "greenkeeper",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
