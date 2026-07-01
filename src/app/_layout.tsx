@@ -1,13 +1,24 @@
 import { Stack } from "expo-router";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
 import { runMigrations } from "../core/database/migrations";
 
 export default function RootLayout() {
-    useEffect(() => {
-        runMigrations()
-        .then(() => console.log("Migrations executed successfully."))
-        .catch((error) => console.error("Error executing migrations:", error));
-    }, []);
-       
-    return <Stack screenOptions={{ headerShown: false }} />;
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    runMigrations()
+      .then(() => setReady(true))
+      .catch((error) => console.error("Error executing migrations:", error));
+  }, []);
+
+  if (!ready) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

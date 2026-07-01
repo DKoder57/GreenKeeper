@@ -2,60 +2,57 @@
 
 ## Visão Geral
 
-O GreenKeeper é um aplicativo mobile desenvolvido com React Native e Expo voltado para gerenciamento de plantas, registro de cuidados, persistência local de dados e futuras funcionalidades de gamificação.
+O GreenKeeper é um aplicativo mobile desenvolvido com React Native e Expo para gerenciamento de plantas e registro de cuidados.
 
-A arquitetura segue uma abordagem orientada a funcionalidades (*Feature-Based Architecture*) combinada com separação clara de responsabilidades, visando escalabilidade, manutenibilidade e evolução sustentável do projeto.
+A arquitetura segue uma abordagem orientada a funcionalidades (*Feature-Based Architecture*) com separação clara de responsabilidades entre interface, domínio e infraestrutura.
 
 ### Princípios Arquiteturais
 
 * Separação de Responsabilidades (*Separation of Concerns*)
 * Princípio da Responsabilidade Única (*Single Responsibility Principle*)
-* Organização por Domínio (*Feature-Based Organization*)
-* Isolamento de Contextos de Negócio
-* Gerenciamento de Estado Previsível
-* Tipagem Forte
-* Estrutura Preparada para Produção
+* Organização por Funcionalidade (*Feature-Based Organization*)
+* Fluxo Unidirecional de Dados
+* Tipagem Forte com TypeScript
+* Baixo Acoplamento
+* Alta Coesão
 
 ---
 
-# Estrutura do Projeto
+# Estrutura Atual do Projeto
 
 ```text
 src/
 ├── app/
 │   ├── (tabs)/
-│   ├── plant/
+│   │   ├── _layout.tsx
+│   │   └── index.tsx
+│   │
 │   └── _layout.tsx
 │
 ├── core/
-│   ├── config/
-│   ├── database/
-│   └── theme/
+│   └── database/
+│       ├── database.ts
+│       ├── migrations.ts
+│       ├── schema.ts
+│       └── types.ts
 │
 ├── features/
-│   ├── plants/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   ├── schemas/
-│   │   └── types.ts
-│   │
-│   └── notifications/
+│   └── plants/
+│       ├── repository/
+│       │   └── plant.repository.ts
+│       │
+│       └── types.ts
 │
 ├── shared/
-│   ├── components/
-│   ├── hooks/
-│   └── utils/
 │
 └── store/
-    └── useUiStore.ts
 ```
 
 ---
 
 # Responsabilidades das Camadas
 
-## Camada App
+## App
 
 **Localização**
 
@@ -63,24 +60,22 @@ src/
 src/app
 ```
 
-**Responsabilidades**
+### Responsabilidades
 
 * Definição de rotas
-* Fluxo de navegação
+* Navegação
 * Composição de telas
-* Inicialização de provedores globais
+* Inicialização da aplicação
 
-**Restrições**
+### Restrições
 
+* Não executar SQL
+* Não acessar banco diretamente
 * Não conter regras de negócio
-* Não acessar o banco de dados diretamente
-* Não realizar transformações complexas de dados
-
-A camada App deve atuar apenas como ponto de entrada e orquestração da navegação.
 
 ---
 
-## Camada Features
+## Features
 
 **Localização**
 
@@ -88,15 +83,12 @@ A camada App deve atuar apenas como ponto de entrada e orquestração da navega�
 src/features
 ```
 
-**Responsabilidades**
+### Responsabilidades
 
+* Organização por domínio
+* Tipos da funcionalidade
+* Repositórios
 * Regras de negócio
-* Componentes específicos do domínio
-* Abstrações de acesso aos dados
-* Hooks do React Query
-* Esquemas de validação
-
-Cada funcionalidade deve ser autocontida e independente sempre que possível.
 
 Exemplo:
 
@@ -104,11 +96,36 @@ Exemplo:
 features/plants
 ```
 
-Contém tudo relacionado ao gerenciamento de plantas.
+Centraliza tudo relacionado ao gerenciamento de plantas.
 
 ---
 
-## Camada Shared
+### Repository
+
+**Localização**
+
+```text
+features/plants/repository
+```
+
+### Responsabilidades
+
+* Executar operações no SQLite
+* Inserir registros
+* Buscar registros
+* Remover registros
+
+Exemplo:
+
+```text
+PlantRepository
+```
+
+O repositório é a única camada do domínio que conhece consultas SQL.
+
+---
+
+## Shared
 
 **Localização**
 
@@ -116,25 +133,21 @@ Contém tudo relacionado ao gerenciamento de plantas.
 src/shared
 ```
 
-**Responsabilidades**
+### Responsabilidades
 
-Recursos reutilizáveis disponíveis para toda a aplicação.
+Recursos reutilizáveis entre funcionalidades.
 
 Exemplos:
 
-* Botões
-* Inputs
-* Cards
+* Componentes compartilhados
 * Hooks genéricos
-* Funções utilitárias
+* Utilitários
 
-Os componentes desta camada devem permanecer independentes das regras de negócio.
-
-Um componente compartilhado não deve possuir conhecimento sobre plantas, notificações ou conquistas.
+Atualmente a pasta está reservada para crescimento futuro.
 
 ---
 
-## Camada Core
+## Core
 
 **Localização**
 
@@ -142,22 +155,48 @@ Um componente compartilhado não deve possuir conhecimento sobre plantas, notifi
 src/core
 ```
 
-**Responsabilidades**
+### Responsabilidades
 
 Infraestrutura global da aplicação.
 
 Exemplos:
 
-* Configuração de temas
-* Variáveis de ambiente
-* Inicialização do banco de dados
-* Constantes globais
-
-A camada Core fornece a base do sistema e não deve depender de módulos de negócio.
+* Inicialização do SQLite
+* Migrations
+* Schemas SQL
+* Configurações globais
 
 ---
 
-## Camada Store
+### Database
+
+**Localização**
+
+```text
+src/core/database
+```
+
+### Responsabilidades
+
+#### database.ts
+
+Responsável pela criação e acesso à conexão SQLite.
+
+#### schema.ts
+
+Responsável pela definição das tabelas.
+
+#### migrations.ts
+
+Responsável pela execução automática das migrations.
+
+#### types.ts
+
+Responsável por tipos relacionados à infraestrutura do banco.
+
+---
+
+## Store
 
 **Localização**
 
@@ -165,79 +204,22 @@ A camada Core fornece a base do sistema e não deve depender de módulos de neg�
 src/store
 ```
 
-**Responsabilidades**
+Reservada para estados globais quando necessários.
 
-Gerenciamento de estados globais relacionados à interface.
-
-Exemplos:
-
-* Tema ativo
-* Controle de modais
-* Preferências visuais
-* Estados temporários da interface
-
-Dados de negócio não devem ser armazenados nesta camada.
+Atualmente não possui responsabilidades implementadas.
 
 ---
 
-# Gerenciamento de Estado
+# Persistência de Dados
 
-O GreenKeeper separa os estados da aplicação de acordo com sua natureza e ciclo de vida.
+A aplicação utiliza SQLite como mecanismo de persistência local.
 
-## Dados Persistentes
-
-Gerenciados por:
-
-* React Query
-
-Exemplos:
-
-* Plantas cadastradas
-* Histórico de cuidados
-* Estatísticas
-* Conquistas
-
-Responsabilidades:
-
-* Cache
-* Sincronização
-* Busca de dados
-* Estados de carregamento
-* Estados de erro
-
----
-
-## Estado de Interface
-
-Gerenciado por:
-
-* Zustand
-
-Exemplos:
-
-* Tema selecionado
-* Modais abertos
-* Preferências visuais
-* Estados temporários da interface
-
-Responsabilidades:
-
-* Atualizações rápidas
-* Compartilhamento de estado visual
-* Comunicação entre telas
-
----
-
-# Fluxo de Dados
-
-A aplicação segue um fluxo unidirecional de dados.
+Fluxo de acesso:
 
 ```text
 UI
  ↓
-Hooks
- ↓
-Services
+Repository
  ↓
 SQLite
 ```
@@ -247,82 +229,39 @@ Fluxo detalhado:
 ```text
 Tela
  ↓
-Hook React Query
+PlantRepository
  ↓
-Serviço do Domínio
+getDatabase()
  ↓
-Banco de Dados
+SQLite
 ```
 
-O acesso ao banco deve ocorrer exclusivamente através da camada de serviços.
+Nenhuma tela deve executar consultas SQL diretamente.
 
 ---
 
-# Validação de Formulários
+# Banco de Dados
 
-Toda entrada de dados deve ser validada antes da persistência.
+## Tabela Plants
 
-### Stack Recomendada
+Responsável pelo armazenamento das plantas cadastradas.
 
-* React Hook Form
-* Zod
+Campos atuais:
 
-### Responsabilidades
-
-* Validação de entradas
-* Inferência de tipos
-* Feedback ao usuário
-* Bloqueio de submissões inválidas
-
-Exemplos:
-
-* Campos obrigatórios
-* Tamanho mínimo de texto
-* Limites numéricos
-* Validação de datas
-
-Nenhuma operação de banco deve ser executada sem validação prévia.
+```text
+id
+name
+species
+created_at
+```
 
 ---
 
-# Tratamento de Erros
+## Tabela Activities
 
-Os erros são tratados de acordo com a responsabilidade de cada camada.
+Responsável pelo armazenamento de atividades relacionadas às plantas.
 
-## Services
-
-**Responsabilidades**
-
-* Executar operações no banco
-* Retornar resultados
-* Propagar erros quando necessário
-
-Serviços não devem exibir mensagens, alertas ou elementos visuais.
-
----
-
-## Hooks
-
-**Responsabilidades**
-
-* Gerenciar estados de carregamento
-* Gerenciar estados de erro
-* Expor o status das operações
-
-Grande parte desse comportamento é controlada automaticamente pelo React Query.
-
----
-
-## Interface
-
-**Responsabilidades**
-
-* Exibir estados de erro
-* Exibir estados vazios
-* Exibir carregamentos
-* Permitir tentativas de recuperação
-
-A interface deve responder de forma previsível e evitar falhas visíveis ao usuário.
+A estrutura é criada através das migrations do projeto.
 
 ---
 
@@ -330,88 +269,73 @@ A interface deve responder de forma previsível e evitar falhas visíveis ao usu
 
 ## Componentes
 
-**Padrão**
-
 ```text
 PascalCase
 ```
 
-**Exemplos**
+Exemplos:
 
 ```text
 PlantCard.tsx
-PrimaryButton.tsx
 PlantForm.tsx
+```
+
+---
+
+## Repositórios
+
+```text
+camelCase + repository
+```
+
+Exemplos:
+
+```text
+plant.repository.ts
 ```
 
 ---
 
 ## Hooks
 
-**Padrão**
-
 ```text
-camelCase com prefixo "use"
+camelCase com prefixo use
 ```
 
-**Exemplos**
+Exemplos:
 
 ```text
 usePlants.ts
-usePlant.ts
-useTheme.ts
 ```
 
 ---
 
-## Serviços
-
-**Padrão**
+## Tipos
 
 ```text
-camelCase + sufixo Service
+types.ts
 ```
 
-**Exemplos**
+Exemplos:
 
 ```text
-plantService.ts
-notificationService.ts
-```
-
----
-
-## Utilitários
-
-**Padrão**
-
-```text
-camelCase
-```
-
-**Exemplos**
-
-```text
-dateFormatter.ts
-stringNormalizer.ts
+Plant
+Activity
 ```
 
 ---
 
-## Rotas e Diretórios
-
-**Padrão**
+## Rotas
 
 ```text
-minúsculo ou kebab-case
+minúsculo
 ```
 
-**Exemplos**
+Exemplos:
 
 ```text
 plant/
-garden-world/
-notifications/
+settings/
 ```
 
 ---
@@ -425,30 +349,17 @@ app
  ↓
 features
  ↓
-shared
- ↓
 core
 ```
 
 ### Regras
 
-* Features não devem depender diretamente de outras features.
-* Recursos compartilhados devem permanecer independentes do domínio.
-* Core não deve depender de features.
-* O banco de dados deve ser acessado apenas por serviços.
-* Componentes de interface não devem executar consultas SQL.
+* App não acessa SQLite diretamente.
+* SQL permanece isolado nos repositórios.
+* Features não dependem diretamente de outras features.
+* Core não depende de features.
+* Componentes de interface não executam consultas SQL.
+* Toda persistência passa pelo repositório correspondente.
 
----
-
-# Objetivos Arquiteturais
-
-A arquitetura foi projetada para oferecer:
-
-* Facilidade de manutenção
-* Organização previsível do código
-* Escalabilidade de funcionalidades
-* Responsabilidades bem definidas
-* Facilidade de aprendizado e onboarding
-* Boas práticas compatíveis com ambientes de produção
-
-Toda nova funcionalidade adicionada ao projeto deve seguir os mesmos princípios arquiteturais para preservar a consistência do código ao longo do tempo.
+```
+```
