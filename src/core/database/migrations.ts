@@ -12,3 +12,5 @@ export async function runMigrations() {
     ${CREATE_ACTIVITIES_TABLE}
   `);
 }
+
+console.log("Running migrations...");
