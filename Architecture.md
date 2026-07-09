@@ -27,14 +27,20 @@ src/
 │   │   ├── _layout.tsx
 │   │   └── index.tsx
 │   │
+│   ├── dev-preview.tsx
 │   └── _layout.tsx
 │
 ├── core/
-│   └── database/
-│       ├── database.ts
-│       ├── migrations.ts
-│       ├── schema.ts
-│       └── types.ts
+│   ├── database/
+│   │   ├── database.ts
+│   │   ├── migrations.ts
+│   │   ├── schema.ts
+│   │   └── types.ts
+│   │
+│   └── theme/
+│       ├── tokens.ts
+│       ├── useAppColorScheme.ts
+│       └── index.ts
 │
 ├── features/
 │   └── plants/
@@ -44,8 +50,15 @@ src/
 │       └── types.ts
 │
 ├── shared/
+│   └── components/
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       ├── Input.tsx
+│       ├── EmptyState.tsx
+│       └── index.ts
 │
 └── store/
+    └── themeStore.ts
 ```
 
 ---
@@ -137,13 +150,30 @@ src/shared
 
 Recursos reutilizáveis entre funcionalidades.
 
-Exemplos:
+### Components
 
-* Componentes compartilhados
-* Hooks genéricos
-* Utilitários
+**Localização**
 
-Atualmente a pasta está reservada para crescimento futuro.
+```text
+src/shared/components
+```
+
+Componentes de UI reutilizáveis, estilizados com `StyleSheet` do React Native e consumindo o tema global (`src/core/theme`) via hook `useAppColorScheme`.
+
+Componentes atuais:
+
+```text
+Button      — variantes primary, secondary, outline, danger; suporta loading e disabled
+Card        — container com borda, radius e padding do tema
+Input       — campo de texto com label e estado de erro
+EmptyState  — estado vazio com título, descrição e ação opcional (usa Button)
+```
+
+### Restrições
+
+* Não acessam repositórios ou SQLite diretamente
+* Não contêm regras de negócio de domínio
+* Recebem dados e callbacks via props
 
 ---
 
@@ -164,6 +194,7 @@ Exemplos:
 * Inicialização do SQLite
 * Migrations
 * Schemas SQL
+* Tema global
 * Configurações globais
 
 ---
@@ -196,6 +227,34 @@ Responsável por tipos relacionados à infraestrutura do banco.
 
 ---
 
+### Theme
+
+**Localização**
+
+```text
+src/core/theme
+```
+
+### Responsabilidades
+
+Define o tema visual global do aplicativo (cores, spacing, radius) para os modos claro e escuro, e expõe o hook de consumo do tema.
+
+#### tokens.ts
+
+Define os tokens de cor (`palette`, `lightTheme`, `darkTheme`), `spacing` e `radius`. Estilização é feita via `StyleSheet.create` do React Native, sem dependência de bibliotecas externas de CSS.
+
+#### useAppColorScheme.ts
+
+Hook que expõe o tema ativo (`theme`), o modo atual (`colorScheme`, `isDark`) e as ações de troca manual (`setColorScheme`, `toggleColorScheme`). O modo é controlado manualmente pelo usuário (override), não segue o tema do sistema operacional automaticamente. O estado é mantido via Zustand (`src/store/themeStore.ts`).
+
+#### index.ts
+
+Ponto único de exportação do módulo de tema (tokens, tipos e hook).
+
+> Nota histórica: a estilização do app foi inicialmente planejada com NativeWind v5 (Tailwind CSS para React Native). Após instabilidades não resolvidas na versão preview (classes não aplicadas em runtime), o projeto migrou para `StyleSheet` nativo do React Native, eliminando a dependência externa.
+
+---
+
 ## Store
 
 **Localização**
@@ -204,9 +263,11 @@ Responsável por tipos relacionados à infraestrutura do banco.
 src/store
 ```
 
-Reservada para estados globais quando necessários.
+Estado global de UI, gerenciado com Zustand. Não armazena dados persistentes de domínio (isso é responsabilidade do SQLite via repositórios).
 
-Atualmente não possui responsabilidades implementadas.
+### themeStore.ts
+
+Armazena o `colorScheme` ativo (`light` | `dark`) e expõe as ações `setColorScheme` e `toggleColorScheme`, consumidas pelo hook `useAppColorScheme`.
 
 ---
 
@@ -276,6 +337,8 @@ PascalCase
 Exemplos:
 
 ```text
+Button.tsx
+Card.tsx
 PlantCard.tsx
 PlantForm.tsx
 ```
@@ -306,6 +369,21 @@ Exemplos:
 
 ```text
 usePlants.ts
+useAppColorScheme.ts
+```
+
+---
+
+## Stores (Zustand)
+
+```text
+camelCase + Store
+```
+
+Exemplos:
+
+```text
+themeStore.ts
 ```
 
 ---
@@ -321,6 +399,8 @@ Exemplos:
 ```text
 Plant
 Activity
+Theme
+ColorScheme
 ```
 
 ---
@@ -336,6 +416,7 @@ Exemplos:
 ```text
 plant/
 settings/
+dev-preview
 ```
 
 ---
@@ -352,6 +433,12 @@ features
 core
 ```
 
+```text
+shared/components
+ ↓
+core/theme
+```
+
 ### Regras
 
 * App não acessa SQLite diretamente.
@@ -360,6 +447,5 @@ core
 * Core não depende de features.
 * Componentes de interface não executam consultas SQL.
 * Toda persistência passa pelo repositório correspondente.
-
-```
-```
+* Componentes de `shared/components` só dependem de `core/theme`, nunca de `features` ou `core/database`.
+* Estilização é feita exclusivamente via `StyleSheet` do React Native; nenhuma dependência externa de CSS/Tailwind é utilizada no projeto.
