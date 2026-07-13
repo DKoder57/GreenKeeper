@@ -2,11 +2,15 @@ import { getDatabase } from "@/core/database/database";
 import { Plant } from "../types";
 
 export class PlantRepository {
-  static async create(name: string, species?: string): Promise<void> {
+  static async create(
+    name: string,
+    species: string | undefined,
+    plantedAt: string
+  ): Promise<void> {
     const db = await getDatabase();
     await db.runAsync(
       `INSERT INTO plants (name, species, created_at) VALUES (?, ?, ?)`,
-      [name, species ?? null, new Date().toISOString()]
+      [name, species ?? null, plantedAt]
     );
   }
 

@@ -4,7 +4,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Button, EmptyState } from "@/shared/components";
 import { PlantCard } from "../../shared/components/PlantCard";
-import { usePlants } from "../../features/hooks/usePlants";
+import { usePlants } from "../../features/plants/hooks/usePlants";
 import { useAppColorScheme } from "@/core/theme";
 import type { Theme } from "@/core/theme";
 import type { Plant } from "@/features/plants/types";

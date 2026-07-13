@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlantRepository } from "../../features/plants/repository/plant.repository";
+import { PlantRepository } from "../repository/plant.repository";
 
 export const plantsQueryKey = ["plants"] as const;
 
