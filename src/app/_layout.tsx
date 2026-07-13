@@ -1,18 +1,18 @@
 import { Stack } from "expo-router";
 import { useState, useEffect } from "react";
-import { View, ActivityIndicator, Button } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 import { runMigrations } from "../core/database/migrations";
-
-
+import { QueryProvider } from "../core/query/QueryProvider";
+ 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
-
+ 
   useEffect(() => {
     runMigrations()
       .then(() => setReady(true))
       .catch((error) => console.error("Error executing migrations:", error));
   }, []);
-
+ 
   if (!ready) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -20,6 +20,10 @@ export default function RootLayout() {
       </View>
     );
   }
-
-  return <Stack screenOptions={{ headerShown: false }} />;
+ 
+  return (
+    <QueryProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </QueryProvider>
+  );
 }

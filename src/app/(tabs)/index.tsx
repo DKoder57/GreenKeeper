@@ -1,50 +1,108 @@
-import { useEffect, useState } from "react";
-import { View, Text, Button, FlatList } from "react-native";
-import { Plant } from "@/features/plants/types";
-import { PlantRepository } from "@/features/plants/repository/plant.repository";
+// src/app/(tabs)/index.tsx
+import React from "react";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import { Button, EmptyState } from "@/shared/components";
+import { PlantCard } from "../../shared/components/PlantCard";
+import { usePlants } from "../../features/hooks/usePlants";
+import { useAppColorScheme } from "@/core/theme";
+import type { Theme } from "@/core/theme";
+import type { Plant } from "@/features/plants/types";
 
+export default function Home() {
+  const { theme } = useAppColorScheme();
+  const { plants, isLoading, isError, refetch } = usePlants();
+  const styles = createStyles(theme);
 
-export default function Dashboard() {
-  const [plants, setPlants] = useState<Plant[]>([]);
-
-  async function loadPlants() {
-    const data = await PlantRepository.findAll();
-    setPlants(data);
-  }
-  
-  async function handleDelete() {
-        if (plants.length > 0) {
-          await PlantRepository.delete(plants[0].id);
-          await loadPlants();
-        }
-      }
-
-  async function handleCreate() {
-    await PlantRepository.create(`Planta ${Date.now()}`, "Teste");
-    await loadPlants();
+  function handleAddPlant() {
+    // Tela de cadastro será implementada em uma próxima task.
+    router.push("/plant/new");
   }
 
-  useEffect(() => {
-    loadPlants();
-  }, []);
+  if (isLoading) {
+    return (
+      <View style={styles.screen}>
+        <Text style={styles.loadingText}>Carregando plantas...</Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.screen}>
+        <EmptyState
+          title="Não foi possível carregar suas plantas"
+          description="Verifique e tente novamente."
+          actionLabel="Tentar novamente"
+          onAction={() => refetch()}
+        />
+      </View>
+    );
+  }
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
+    <View style={styles.screen}>
+      <View style={styles.header}>
+        <Text style={styles.heading}>Minhas Plantas</Text>
+        <Button label="Adicionar" variant="primary" onPress={handleAddPlant} />
+      </View>
 
-      <Button title="Adicionar Planta" onPress={handleCreate} />
-      <Button title="Apagar Planta" onPress={handleDelete} />
-      <Button title="Dev Preview" onPress={() => router.push("../dev_preview")} />
+      {__DEV__ && (
+        <Button
+          label="Dev Preview"
+          variant="outline"
+          onPress={() => router.push("/dev-preview")}
+        />
+      )}
 
-      <FlatList
-        data={plants}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Text>
-            {item.name} - {item.species}
-          </Text>
-        )}
-      />
+      {plants.length === 0 ? (
+        <EmptyState
+          title="Nenhuma planta cadastrada"
+          description="Adicione sua primeira planta para começar a acompanhar o crescimento."
+          actionLabel="Adicionar planta"
+          onAction={handleAddPlant}
+        />
+      ) : (
+        <FlatList
+          data={plants}
+          keyExtractor={(item: Plant) => String(item.id)}
+          renderItem={({ item }) => <PlantCard plant={item} />}
+          contentContainerStyle={styles.list}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+        />
+      )}
     </View>
   );
+}
+
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      padding: theme.spacing.md,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: theme.spacing.md,
+    },
+    heading: {
+      fontSize: 22,
+      fontWeight: "700",
+      color: theme.colors.text,
+    },
+    list: {
+      paddingBottom: theme.spacing.xl,
+    },
+    separator: {
+      height: theme.spacing.sm,
+    },
+    loadingText: {
+      color: theme.colors.textMuted,
+      textAlign: "center",
+      marginTop: theme.spacing.xl,
+    },
+  });
 }

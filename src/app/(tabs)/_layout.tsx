@@ -1,5 +1,4 @@
-import { router, Tabs } from "expo-router";
-import { Button } from "../../shared/components/Button";
+import { Tabs } from "expo-router";
 
 export default function TabsLayout () {
     return ( 
