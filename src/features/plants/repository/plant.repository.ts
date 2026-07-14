@@ -21,6 +21,28 @@ export class PlantRepository {
     );
   }
 
+  static async findById(id: number): Promise<Plant | null> {
+    const db = await getDatabase();
+    const result = await db.getFirstAsync<Plant>(
+      `SELECT * FROM plants WHERE id = ?`,
+      [id]
+    );
+    return result ?? null;
+  }
+
+  static async update(
+    id: number,
+    name: string,
+    species: string | undefined,
+    plantedAt: string
+  ): Promise<void> {
+    const db = await getDatabase();
+    await db.runAsync(
+      `UPDATE plants SET name = ?, species = ?, created_at = ? WHERE id = ?`,
+      [name, species ?? null, plantedAt, id]
+    );
+  }
+
   static async delete(id: number): Promise<void> {
     const db = await getDatabase();
     await db.runAsync(`DELETE FROM plants WHERE id = ?`, [id]);

@@ -46,3 +46,15 @@ export function parseDateBR(value: string): { iso: string } | { error: string } 
 
   return { iso: date.toISOString() };
 }
+
+/**
+ * Converte um ISO string armazenado no banco para DD/MM/AAAA,
+ * usado para pré-preencher o formulário de edição.
+ */
+export function formatDateBR(iso: string): string {
+  const date = new Date(iso);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}

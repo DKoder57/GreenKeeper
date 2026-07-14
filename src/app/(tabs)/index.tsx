@@ -4,7 +4,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Button, EmptyState } from "@/shared/components";
 import { PlantCard } from "../../shared/components/PlantCard";
-import { usePlants } from "../../features/plants/hooks/usePlants";
+import { usePlants } from "@/features/plants/hooks/usePlants";
 import { useAppColorScheme } from "@/core/theme";
 import type { Theme } from "@/core/theme";
 import type { Plant } from "@/features/plants/types";
@@ -15,8 +15,11 @@ export default function Home() {
   const styles = createStyles(theme);
 
   function handleAddPlant() {
-    // Tela de cadastro será implementada em uma próxima task.
     router.push("/plant/new");
+  }
+
+  function handlePlantPress(plant: Plant) {
+    router.push(`/plant/${plant.id}`);
   }
 
   if (isLoading) {
@@ -66,7 +69,9 @@ export default function Home() {
         <FlatList
           data={plants}
           keyExtractor={(item: Plant) => String(item.id)}
-          renderItem={({ item }) => <PlantCard plant={item} />}
+          renderItem={({ item }) => (
+            <PlantCard plant={item} onPress={handlePlantPress} />
+          )}
           contentContainerStyle={styles.list}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
