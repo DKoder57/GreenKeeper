@@ -8,6 +8,8 @@ import type { Theme } from "@/core/theme";
 import { usePlant } from "@/features/plants/hooks/usePlant";
 import { useUpdatePlant } from "@/features/plants/hooks/useUpdatePlant";
 import { useDeletePlant } from "@/features/plants/hooks/useDeletePlant";
+import { useLastWatering } from "@/features/plants/hooks/useLastWatering";
+import { useRegisterWatering } from "@/features/plants/hooks/useRegisterWatering";
 import { maskDateBR, parseDateBR, formatDateBR } from "@/features/plants/utils/dateBR";
 
 export default function EditPlant() {
@@ -19,6 +21,9 @@ export default function EditPlant() {
   const { plant, isLoading, isError } = usePlant(id);
   const { mutateAsync: updatePlant, isPending: isSaving } = useUpdatePlant();
   const { mutateAsync: deletePlant, isPending: isDeleting } = useDeletePlant();
+  const { lastWatering, isLoading: isLoadingWatering } = useLastWatering(id);
+  const { mutateAsync: registerWatering, isPending: isRegisteringWatering } =
+    useRegisterWatering(id);
 
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
@@ -83,6 +88,14 @@ export default function EditPlant() {
     }
   }
 
+  async function handleRegisterWatering() {
+    try {
+      await registerWatering();
+    } catch {
+      setSubmitError("Não foi possível registrar a rega. Tente novamente.");
+    }
+  }
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -106,6 +119,23 @@ export default function EditPlant() {
       keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.heading}>Editar planta</Text>
+
+      <Card style={styles.wateringCard}>
+        <Text style={styles.wateringLabel}>Última rega</Text>
+        <Text style={styles.wateringValue}>
+          {isLoadingWatering
+            ? "Carregando..."
+            : lastWatering
+              ? formatDateBR(lastWatering.created_at)
+              : "Nunca regada"}
+        </Text>
+        <Button
+          label="Registrar rega"
+          variant="secondary"
+          onPress={handleRegisterWatering}
+          loading={isRegisteringWatering}
+        />
+      </Card>
 
       <Card style={styles.card}>
         <Input
@@ -173,6 +203,21 @@ function createStyles(theme: Theme) {
       fontWeight: "700",
       color: theme.colors.text,
       marginBottom: theme.spacing.md,
+    },
+    wateringCard: {
+      gap: theme.spacing.xs,
+      marginBottom: theme.spacing.md,
+    },
+    wateringLabel: {
+      fontSize: 13,
+      color: theme.colors.textMuted,
+      textTransform: "uppercase",
+    },
+    wateringValue: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: theme.colors.text,
+      marginBottom: theme.spacing.xs,
     },
     card: {
       gap: theme.spacing.sm,
