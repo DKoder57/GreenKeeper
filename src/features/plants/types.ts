@@ -8,6 +8,7 @@ export interface Plant {
 export interface Activity {
     id: number;
     plant_id: number;
-    type: string;
+    type: "watering" | "fertilizing";
+    notes: string | null;
     created_at: string;
 }

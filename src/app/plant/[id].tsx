@@ -8,6 +8,10 @@ import type { Theme } from "@/core/theme";
 import { usePlant } from "@/features/plants/hooks/usePlant";
 import { useUpdatePlant } from "@/features/plants/hooks/useUpdatePlant";
 import { useDeletePlant } from "@/features/plants/hooks/useDeletePlant";
+import { useLastWatering } from "@/features/plants/hooks/useLastWatering";
+import { useRegisterWatering } from "@/features/plants/hooks/useRegisterWatering";
+import { useLastFertilizing } from "@/features/plants/hooks/useLastFertilizing";
+import { useRegisterFertilizing } from "@/features/plants/hooks/useRegisterFertilizing";
 import { maskDateBR, parseDateBR, formatDateBR } from "@/features/plants/utils/dateBR";
 
 export default function EditPlant() {
@@ -19,6 +23,12 @@ export default function EditPlant() {
   const { plant, isLoading, isError } = usePlant(id);
   const { mutateAsync: updatePlant, isPending: isSaving } = useUpdatePlant();
   const { mutateAsync: deletePlant, isPending: isDeleting } = useDeletePlant();
+
+  const { lastWatering } = useLastWatering(id);
+  const { mutateAsync: registerWatering, isPending: isRegisteringWatering } = useRegisterWatering(id);
+
+  const { lastFertilizing } = useLastFertilizing(id);
+  const { mutateAsync: registerFertilizing, isPending: isRegisteringFertilizing } = useRegisterFertilizing(id);
 
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
@@ -83,6 +93,22 @@ export default function EditPlant() {
     }
   }
 
+  async function handleRegisterWatering() {
+    try {
+      await registerWatering(undefined);
+    } catch {
+      setSubmitError("Não foi possível registrar a rega. Tente novamente.");
+    }
+  }
+
+  async function handleRegisterFertilizing() {
+    try {
+      await registerFertilizing(undefined);
+    } catch {
+      setSubmitError("Não foi possível registrar a adubação. Tente novamente.");
+    }
+  }
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -106,6 +132,32 @@ export default function EditPlant() {
       keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.heading}>Editar planta</Text>
+
+      <Card style={styles.activityCard}>
+        <Text style={styles.activityLabel}>ÚLTIMA REGA</Text>
+        <Text style={styles.activityValue}>
+          {lastWatering ? formatDateBR(lastWatering.created_at) : "Nunca regada"}
+        </Text>
+        <Button
+          label="Registrar rega"
+          variant="secondary"
+          onPress={handleRegisterWatering}
+          loading={isRegisteringWatering}
+        />
+      </Card>
+
+      <Card style={styles.activityCard}>
+        <Text style={styles.activityLabel}>ÚLTIMA ADUBAÇÃO</Text>
+        <Text style={styles.activityValue}>
+          {lastFertilizing ? formatDateBR(lastFertilizing.created_at) : "Nunca adubada"}
+        </Text>
+        <Button
+          label="Registrar adubação"
+          variant="secondary"
+          onPress={handleRegisterFertilizing}
+          loading={isRegisteringFertilizing}
+        />
+      </Card>
 
       <Card style={styles.card}>
         <Input
@@ -173,6 +225,23 @@ function createStyles(theme: Theme) {
       fontWeight: "700",
       color: theme.colors.text,
       marginBottom: theme.spacing.md,
+    },
+    activityCard: {
+      gap: theme.spacing.xs,
+      marginBottom: theme.spacing.md,
+    },
+    activityLabel: {
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 0.5,
+      color: theme.colors.textMuted,
+      textTransform: "uppercase",
+    },
+    activityValue: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: theme.colors.text,
+      marginBottom: theme.spacing.xs,
     },
     card: {
       gap: theme.spacing.sm,
