@@ -44,4 +44,11 @@ export class ActivityRepository {
   static findLastFertilizingByPlantId(plantId: number): Promise<Activity | null> {
     return ActivityRepository.findLastByPlantId(plantId, "fertilizing");
   }
+
+  static registerPruning(plantId: number, notes?: string): Promise<void> {
+    return ActivityRepository.register(plantId, "pruning", notes);
+  }
+  static findLastPruningByPlantId(plantId: number): Promise<Activity | null> {
+    return ActivityRepository.findLastByPlantId(plantId, "pruning");
+  }
 }

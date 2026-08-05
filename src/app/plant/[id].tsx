@@ -12,6 +12,8 @@ import { useLastWatering } from "@/features/plants/hooks/useLastWatering";
 import { useRegisterWatering } from "@/features/plants/hooks/useRegisterWatering";
 import { useLastFertilizing } from "@/features/plants/hooks/useLastFertilizing";
 import { useRegisterFertilizing } from "@/features/plants/hooks/useRegisterFertilizing";
+import { useLastPruning } from "@/features/plants/hooks/useLastPruning";
+import { useRegisterPruning } from "@/features/plants/hooks/useRegisterPruning";
 import { maskDateBR, parseDateBR, formatDateBR } from "@/features/plants/utils/dateBR";
 
 export default function EditPlant() {
@@ -29,6 +31,9 @@ export default function EditPlant() {
 
   const { lastFertilizing } = useLastFertilizing(id);
   const { mutateAsync: registerFertilizing, isPending: isRegisteringFertilizing } = useRegisterFertilizing(id);
+
+  const { lastPruning } = useLastPruning(id);
+  const { mutateAsync: registerPruning, isPending: isRegisteringPruning } = useRegisterPruning(id);
 
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
@@ -109,6 +114,14 @@ export default function EditPlant() {
     }
   }
 
+  async function handleRegisterPruning() {
+    try {
+      await registerPruning(undefined);
+    } catch {
+      setSubmitError("Não foi possível registrar a poda. Tente novamente.");
+    }
+  }
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -156,6 +169,19 @@ export default function EditPlant() {
           variant="secondary"
           onPress={handleRegisterFertilizing}
           loading={isRegisteringFertilizing}
+        />
+      </Card>
+
+      <Card style={styles.activityCard}>
+        <Text style={styles.activityLabel}>ÚLTIMA PODA</Text>
+        <Text style={styles.activityValue}>
+          {lastPruning ? formatDateBR(lastPruning.created_at) : "Nunca podada"}
+        </Text>
+        <Button
+          label="Registrar poda"
+          variant="secondary"
+          onPress={handleRegisterPruning}
+          loading={isRegisteringPruning}
         />
       </Card>
 
