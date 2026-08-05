@@ -4,12 +4,32 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Button, Card, Input, EmptyState } from "@/shared/components";
 import { useAppColorScheme } from "@/core/theme";
 import type { Theme } from "@/core/theme";
+import { scheduleLocalNotificationAsync } from "@/core/notifications/notificationsService";
 
 export default function DevPreview() {
   const { theme, isDark, toggleColorScheme } = useAppColorScheme();
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
+  const [schedulingNotification, setSchedulingNotification] = useState(false);
+  const [notificationFeedback, setNotificationFeedback] = useState<string | null>(null);
   const styles = createStyles(theme);
+
+  async function handleTestNotification() {
+    setSchedulingNotification(true);
+    setNotificationFeedback(null);
+    try {
+      await scheduleLocalNotificationAsync({
+        title: "GreenKeeper 🌱",
+        body: "Notificação de teste agendada com sucesso!",
+        secondsFromNow: 5,
+      });
+      setNotificationFeedback("Agendada! Deve aparecer em 5 segundos.");
+    } catch {
+      setNotificationFeedback("Não foi possível agendar a notificação.");
+    } finally {
+      setSchedulingNotification(false);
+    }
+  }
 
   return (
     <ScrollView
@@ -24,6 +44,19 @@ export default function DevPreview() {
           onPress={toggleColorScheme}
         />
       </View>
+
+      <Text style={styles.sectionTitle}>Notificações</Text>
+      <Card style={styles.section}>
+        <Button
+          label="Testar notificação em 5s"
+          variant="primary"
+          loading={schedulingNotification}
+          onPress={handleTestNotification}
+        />
+        {notificationFeedback ? (
+          <Text style={styles.cardText}>{notificationFeedback}</Text>
+        ) : null}
+      </Card>
 
       <Text style={styles.sectionTitle}>Button</Text>
       <Card style={styles.section}>
