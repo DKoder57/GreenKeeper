@@ -10,6 +10,8 @@ import { useUpdatePlant } from "@/features/plants/hooks/useUpdatePlant";
 import { useDeletePlant } from "@/features/plants/hooks/useDeletePlant";
 import { useLastWatering } from "@/features/plants/hooks/useLastWatering";
 import { useRegisterWatering } from "@/features/plants/hooks/useRegisterWatering";
+import { useLastFertilizing } from "@/features/plants/hooks/useLastFertilizing";
+import { useRegisterFertilizing } from "@/features/plants/hooks/useRegisterFertilizing";
 import { maskDateBR, parseDateBR, formatDateBR } from "@/features/plants/utils/dateBR";
 
 export default function EditPlant() {
@@ -21,9 +23,12 @@ export default function EditPlant() {
   const { plant, isLoading, isError } = usePlant(id);
   const { mutateAsync: updatePlant, isPending: isSaving } = useUpdatePlant();
   const { mutateAsync: deletePlant, isPending: isDeleting } = useDeletePlant();
-  const { lastWatering, isLoading: isLoadingWatering } = useLastWatering(id);
-  const { mutateAsync: registerWatering, isPending: isRegisteringWatering } =
-    useRegisterWatering(id);
+
+  const { lastWatering } = useLastWatering(id);
+  const { mutateAsync: registerWatering, isPending: isRegisteringWatering } = useRegisterWatering(id);
+
+  const { lastFertilizing } = useLastFertilizing(id);
+  const { mutateAsync: registerFertilizing, isPending: isRegisteringFertilizing } = useRegisterFertilizing(id);
 
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
@@ -90,9 +95,17 @@ export default function EditPlant() {
 
   async function handleRegisterWatering() {
     try {
-      await registerWatering();
+      await registerWatering(undefined);
     } catch {
       setSubmitError("Não foi possível registrar a rega. Tente novamente.");
+    }
+  }
+
+  async function handleRegisterFertilizing() {
+    try {
+      await registerFertilizing(undefined);
+    } catch {
+      setSubmitError("Não foi possível registrar a adubação. Tente novamente.");
     }
   }
 
@@ -120,20 +133,29 @@ export default function EditPlant() {
     >
       <Text style={styles.heading}>Editar planta</Text>
 
-      <Card style={styles.wateringCard}>
-        <Text style={styles.wateringLabel}>Última rega</Text>
-        <Text style={styles.wateringValue}>
-          {isLoadingWatering
-            ? "Carregando..."
-            : lastWatering
-              ? formatDateBR(lastWatering.created_at)
-              : "Nunca regada"}
+      <Card style={styles.activityCard}>
+        <Text style={styles.activityLabel}>ÚLTIMA REGA</Text>
+        <Text style={styles.activityValue}>
+          {lastWatering ? formatDateBR(lastWatering.created_at) : "Nunca regada"}
         </Text>
         <Button
           label="Registrar rega"
           variant="secondary"
           onPress={handleRegisterWatering}
           loading={isRegisteringWatering}
+        />
+      </Card>
+
+      <Card style={styles.activityCard}>
+        <Text style={styles.activityLabel}>ÚLTIMA ADUBAÇÃO</Text>
+        <Text style={styles.activityValue}>
+          {lastFertilizing ? formatDateBR(lastFertilizing.created_at) : "Nunca adubada"}
+        </Text>
+        <Button
+          label="Registrar adubação"
+          variant="secondary"
+          onPress={handleRegisterFertilizing}
+          loading={isRegisteringFertilizing}
         />
       </Card>
 
@@ -204,17 +226,19 @@ function createStyles(theme: Theme) {
       color: theme.colors.text,
       marginBottom: theme.spacing.md,
     },
-    wateringCard: {
+    activityCard: {
       gap: theme.spacing.xs,
       marginBottom: theme.spacing.md,
     },
-    wateringLabel: {
-      fontSize: 13,
+    activityLabel: {
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 0.5,
       color: theme.colors.textMuted,
       textTransform: "uppercase",
     },
-    wateringValue: {
-      fontSize: 18,
+    activityValue: {
+      fontSize: 16,
       fontWeight: "600",
       color: theme.colors.text,
       marginBottom: theme.spacing.xs,
