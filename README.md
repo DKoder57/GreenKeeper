@@ -13,86 +13,45 @@ O projeto combina monitoramento de cuidados, histórico de crescimento, estatís
 * Gerar estatísticas de cuidados
 * Criar um jardim virtual baseado nas plantas reais do usuário
 
-## Funcionalidades Planejadas
+## Markdown
+ #### Como rodar
+**Pré-requisitos:**
 
-### MVP
-
-* [ ] Cadastro de plantas
-* [ ] Edição e remoção de plantas
-* [ ] Registro de regas
-* [ ] Registro de adubações
-* [ ] Registro de podas
-* [ ] Histórico de atividades
-* [ ] Notificações locais
-* [ ] Persistência local com SQLite
-
-### Dashboard
-
-* [ ] Resumo geral
-* [ ] Plantas que precisam de atenção
-* [ ] Estatísticas de cuidados
-* [ ] Indicadores de produtividade
-
-### Biblioteca
-
-* [ ] Catálogo de espécies
-* [ ] Informações sobre cultivo
-* [ ] Classificação por categorias
-
-### Garden World
-
-* [ ] Jardim virtual
-* [ ] Sistema de experiência (XP)
-* [ ] Conquistas
-* [ ] Colecionáveis
-* [ ] Progressão baseada em cuidados reais
-
-## Tecnologias
-
-* React Native
-* Expo
-* TypeScript
-* Expo Router
-* Zustand
-* SQLite
-* Expo Notifications
-* React Query
-
-## Estrutura do Projeto
-
-```text
-src/
-├── app/
-├── features/
-│   ├── plants/
-│   ├── calendar/
-│   ├── orchard/
-│   ├── stats/
-│   ├── library/
-│   └── garden-world/
-├── shared/
-├── store/
-└── database/
+```
+ Node 18+, Expo Go no celular ou emulador Android/iOS 
 ```
 
+```bash
+npm install
+npx expo start
+```
+
+## Stack 
+
+```bash
+* Tecnologia | Framework = > React Native + Expo SDK
+
+* Linguagem = > TypeScript
+
+* Navegação = > Expo Router (file-based)
+
+* Estado Global = > Zustand
+
+* Banco de Dados = > SQLite (expo-sqlite)
+
+* Notificações = > expo-notifications
+ ```
+
+### Convenções de Código
+* Componentes → PascalCase ex: PlantCard.tsx
+* Hooks → prefixo use ex: usePlants.ts
+* Stores Zustand → sufixo Store ex: plantStore.ts
+* Repositórios → sufixo Repository ex: PlantRepository.ts
+* Constantes → UPPER_SNAKE_CASE ex: XP_VALUES
+## Branches → 
+feat/task-01-init, fix/plant-form-validation
+## Regra de Ouro
+Nunca acesse o SQLite diretamente nas telas ou nas stores.
+### O fluxo correto é: Store (Zustand) → Repository → SQLite.
+As stores gerenciam estado em memória. Os Repositories falam com o banco.
 ## Roadmap
-
-### Fase 1
-
-CRUD completo de plantas.
-
-### Fase 2
-
-Calendário, notificações e histórico.
-
-### Fase 3
-
-Dashboard e estatísticas.
-
-### Fase 4
-
-Garden World e sistema de gamificação.
-
-## Licença
-
-Projeto desenvolvido para fins de estudo, portfólio e demonstração técnica.
