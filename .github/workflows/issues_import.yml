@@ -1,0 +1,128 @@
+name: Importador Automático de Issues
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  import-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Importar Issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 << 'EOF'
+          import csv
+          import subprocess
+          import json
+          import sys
+          from collections import defaultdict
+
+          # Arquivo esperado:
+          # issues.csv
+          #
+          # Exemplo:
+          # Title,Description
+          # "[F1][Core] Implementar GridPosition","Criar sistema de coordenadas."
+          # "[F1][Core] Implementar SnakeState","Representar estado da cobra."
+          #
+          # Colunas obrigatórias:
+          # - Title
+          # - Description
+          CSV_FILE = "issues.csv"
+
+          # --- Modelo otimizado ---
+          # Busca TODAS as issues existentes (numero + titulo) uma única vez,
+          # antes do loop, em vez de 1 chamada `gh issue list --search` por
+          # linha do CSV. check=True: se essa chamada falhar, o script para
+          # em vez de seguir achando que não existe nenhuma issue (o que
+          # criaria duplicatas em silêncio).
+          list_result = subprocess.run(
+              [
+                  'gh', 'issue', 'list',
+                  '--state', 'all',
+                  '--json', 'number,title',
+                  '--limit', '1000'
+              ],
+              capture_output=True,
+              text=True
+          )
+          if list_result.returncode != 0:
+              print('Falha ao listar issues existentes:', list_result.stderr, file=sys.stderr)
+              sys.exit(1)
+
+          all_issues = json.loads(list_result.stdout)
+          existing_titles = {issue['title'] for issue in all_issues}
+          # --- Fim do modelo otimizado ---
+
+          # --- Fechamento de duplicadas ---
+          # Apagar issue de verdade exige permissão de Admin no repositório,
+          # que o GITHUB_TOKEN padrão do Actions não tem (só write, mesmo com
+          # `issues: write`) — só funcionaria com um Personal Access Token
+          # pessoal cadastrado como secret. Por isso, duplicatas (mesmo
+          # titulo exato) são FECHADAS, não apagadas: fica reversível e não
+          # exige nenhum token extra.
+          # Mantém a issue mais antiga (menor número) de cada título
+          # repetido; fecha as demais com um comentário apontando qual foi
+          # mantida.
+          by_title = defaultdict(list)
+          for issue in all_issues:
+              by_title[issue['title']].append(issue['number'])
+
+          for title, numbers in by_title.items():
+              if len(numbers) <= 1:
+                  continue
+              numbers.sort()
+              keep = numbers[0]
+              duplicates = numbers[1:]
+              print(f'Titulo duplicado "{title}": mantendo #{keep}, fechando {duplicates}')
+              for number in duplicates:
+                  try:
+                      subprocess.run(
+                          [
+                              'gh', 'issue', 'close', str(number),
+                              '--comment', f'Fechada automaticamente: duplicata de #{keep}.'
+                          ],
+                          check=True,
+                          capture_output=True,
+                          text=True
+                      )
+                  except subprocess.CalledProcessError as e:
+                      # Fecho de duplicata é uma limpeza auxiliar - se uma
+                      # falhar (ex: já estava fechada), avisa e segue em
+                      # frente sem abortar a importação.
+                      print(f'Aviso: não consegui fechar #{number}: {e.stderr}', file=sys.stderr)
+          # --- Fim do fechamento de duplicadas ---
+
+          with open(CSV_FILE, newline='', encoding='utf-8') as f:
+              reader = csv.DictReader(f)
+              for row in reader:
+                  title = row['Title'].strip()
+                  body = row['Description'].strip()
+
+                  if title in existing_titles:
+                      print(f'Issue já existe: {title}')
+                      continue
+
+                  print(f'Criando issue: {title}')
+                  subprocess.run(
+                      [
+                          'gh',
+                          'issue',
+                          'create',
+                          '--title', title,
+                          '--body', body
+                      ],
+                      check=True
+                  )
+                  # Evita duplicata caso o mesmo título apareça mais de uma
+                  # vez no próprio CSV.
+                  existing_titles.add(title)
+          EOF
